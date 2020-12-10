@@ -1,5 +1,5 @@
 
-// bitrix24 js api wrapper for async/await
+// bitrix24 js api Promise-обертка для использования с async/await
 
 var BX24Client = {
 	call: function (method, params) {
@@ -50,7 +50,7 @@ var BX24Client = {
 	}
 };
 
-// example product api
+// пример последовательной выборки и обработки
 
 async function processProductsChunk(result) {
 	var products = result.data();
@@ -63,6 +63,8 @@ async function processProductsChunk(result) {
 		//console.log('[' + v.ID + '] ' + v.NAME);
 	}
 }
+
+// пример выборки и обработки через batch
 
 async function processProductsChunkBatch(result) {
 	var products = result.data();
@@ -84,6 +86,8 @@ async function processProductsChunkBatch(result) {
 		}
 	}
 }
+
+// выборка товаров
 
 async function testCrmProductList() {
 	var res = await BX24Client.call('crm.product.list', {
