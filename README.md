@@ -1,7 +1,7 @@
 
 # Пример использования async/await для js rest api bitrix24
 
-## Как собрать
+## Как собрать для старого браузера (для современных браузеров в этом шаге нет необходимости)
 
 - [через @bitrix/cli](https://zen.yandex.ru/media/id/5b1a58b8eb269500a877dd6c/kak-uspeshno-ustanovit-i-ispolzovat-bitrixcli-cherez-docker-5fccf822702d845a13971788)
 
