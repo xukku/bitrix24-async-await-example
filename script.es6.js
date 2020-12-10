@@ -1,9 +1,11 @@
 
+// bitrix24 js api wrapper for async/await
+
 var BX24Client = {
 	call: function (method, params) {
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve, reject) => {
 			setTimeout(function () {
-		    	BX24.callMethod(method, params, function (result) {
+		    	BX24.callMethod(method, params, (result) => {
 					if (result.error()) {
 						return reject({
 							error: result.error(),
@@ -17,13 +19,23 @@ var BX24Client = {
 		});
 	},
 
+	callBatch: function (calls, bHaltOnError = false) {
+		return new Promise((resolve, reject) => {
+			setTimeout(function () {
+		    	BX24.callBatch(calls, (result) => {
+		    		resolve(result);
+				}, bHaltOnError);
+		  	}, 500);
+		});
+	},
+
 	next: function (result) {
 		if (!result.more()) {
 			return null;
 		}
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve, reject) => {
 			setTimeout(function () {
-				result.next(function (result) {
+				result.next((result) => {
 					if (result.error()) {
 						return reject({
 							error: result.error(),
@@ -38,6 +50,8 @@ var BX24Client = {
 	}
 };
 
+// example product api
+
 async function processProductsChunk(result) {
 	var products = result.data();
 	console.log(products.length);
@@ -50,15 +64,38 @@ async function processProductsChunk(result) {
 	}
 }
 
+async function processProductsChunkBatch(result) {
+	var products = result.data();
+	console.log(products.length);
+	var cmd = {};
+	var hasData = false;
+	for (var i in products) {
+		console.log('add to batch: ', products[i].ID);
+		//console.log('[' + v.ID + '] ' + v.NAME);
+		cmd['P_' + products[i].ID] = ['crm.product.get', {
+			id: products[i].ID
+		}];
+		hasData = true;
+	}
+	if (hasData) {
+		var resProducts = await BX24Client.callBatch(cmd);
+		for (var k in resProducts) {
+			console.log(resProducts[k].data());
+		}
+	}
+}
+
 async function testCrmProductList() {
 	var res = await BX24Client.call('crm.product.list', {
 		//select: ['*', 'PROPERTY_*']
 		select: ['ID']
 	});
-	await processProductsChunk(res);
+	//await processProductsChunk(res);
+	await processProductsChunkBatch(res);
 	while (res.more()) {
 		res = await BX24Client.next(res);
-		await processProductsChunk(res);
+		//await processProductsChunk(res);
+		await processProductsChunkBatch(res);
 	}
 	console.log('Processing finished.');
 	//console.error(e.method + ' -> ' + e.error, e.error);
