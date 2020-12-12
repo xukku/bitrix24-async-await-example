@@ -115,21 +115,21 @@ async function processDealsChunkBatch(result) {
 	for (var i in deals) {
 		console.log('add to batch: ', deals[i].CONTACT_ID);
 		//console.log('[' + v.ID + '] ' + v.NAME);
-		cmd['P_' + products[i].ID] = ['crm.product.get', {
-			id: products[i].ID
+		cmd['c_' + deals[i].ID] = ['crm.contact.get', {
+			id: deals[i].ID
 		}];
 		hasData = true;
 	}
 	if (hasData) {
-		var resProducts = await BX24Client.callBatch(cmd);
-		for (var k in resProducts) {
-			console.log(resProducts[k].data());
+		var resContacts = await BX24Client.callBatch(cmd);
+		for (var k in resContacts) {
+			console.log(resContacts[k].data());
 		}
 	}
 }
 
 async function testCrmDealsList() {
-	var res = await BX24Client.call('crm.deals.list', {
+	var res = await BX24Client.call('crm.deal.list', {
 		select: ['*', 'UF_*']
 	});
 	await processDealsChunkBatch(res);
