@@ -105,29 +105,57 @@ async function testCrmProductList() {
 	//console.error(e.method + ' -> ' + e.error, e.error);
 }
 
-// выборка сделок с контактами
+// выборка сделок с привязанными контактами и компаниями
 
 async function processDealsChunkBatch(result) {
 	var deals = result.data();
 	console.log(deals.length);
 	var cmd = {};
 	var hasData = false;
+	var contactIds = [];
+	var companyIds = [];
+
 	for (var i in deals) {
 		console.log('deal', deals[i]);
-		if (!deals[i].CONTACT_ID) {
-			continue;
+		// собрать id привязанных контактов
+		if (deals[i].CONTACT_ID) {
+			contactIds.push(deals[i].CONTACT_ID);
 		}
-		console.log('add to batch: ', deals[i].CONTACT_ID);
-		//console.log('[' + v.ID + '] ' + v.NAME);
-		cmd['c_' + deals[i].ID] = ['crm.contact.get', {
-			id: deals[i].CONTACT_ID
+		// собрать id привязанных компаний
+		if (deals[i].COMPANY_ID) {
+			companyIds.push(deals[i].COMPANY_ID);
+		}
+	}
+
+	if (contactIds.length) {
+		// добавить в batch запрос на контакты по полученным id
+		cmd['contacts'] = ['crm.contact.list', {
+			filter: {
+				ID: contactIds,
+			}
 		}];
 		hasData = true;
 	}
+
+	if (companyIds.length) {
+		// добавить в batch запрос на компании по полученным id
+		cmd['companies'] = ['crm.company.list', {
+			filter: {
+				ID: companyIds,
+			}
+		}];
+		hasData = true;
+	}
+
 	if (hasData) {
-		var resContacts = await BX24Client.callBatch(cmd);
-		for (var k in resContacts) {
-			console.log('CONTACT', resContacts[k].data());
+		console.log('batch: ', cmd);
+		var res = await BX24Client.callBatch(cmd);
+		// чтото делаем с результатами
+		if ('contacts' in res) {
+			console.log('contacts data: ', res.contacts.data());
+		}
+		if ('companies' in res) {
+			console.log('companies data: ', res.companies.data());
 		}
 	}
 }
