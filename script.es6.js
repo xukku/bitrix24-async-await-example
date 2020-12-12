@@ -105,6 +105,43 @@ async function testCrmProductList() {
 	//console.error(e.method + ' -> ' + e.error, e.error);
 }
 
+// выборка сделок с контактами
+
+async function processDealsChunkBatch(result) {
+	var deals = result.data();
+	console.log(deals.length);
+	var cmd = {};
+	var hasData = false;
+	for (var i in deals) {
+		console.log('add to batch: ', deals[i].CONTACT_ID);
+		//console.log('[' + v.ID + '] ' + v.NAME);
+		cmd['P_' + products[i].ID] = ['crm.product.get', {
+			id: products[i].ID
+		}];
+		hasData = true;
+	}
+	if (hasData) {
+		var resProducts = await BX24Client.callBatch(cmd);
+		for (var k in resProducts) {
+			console.log(resProducts[k].data());
+		}
+	}
+}
+
+async function testCrmDealsList() {
+	var res = await BX24Client.call('crm.deals.list', {
+		select: ['*', 'UF_*']
+	});
+	await processDealsChunkBatch(res);
+	while (res.more()) {
+		res = await BX24Client.next(res);
+		await processDealsChunkBatch(res);
+	}
+	console.log('Processing deals finished.');
+}
+
 BX24.ready(function () {
-	testCrmProductList();
+	//testCrmProductList();
+
+	testCrmDealsList();
 });
