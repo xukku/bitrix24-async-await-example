@@ -113,17 +113,21 @@ async function processDealsChunkBatch(result) {
 	var cmd = {};
 	var hasData = false;
 	for (var i in deals) {
+		console.log('deal', deals[i]);
+		if (!deals[i].CONTACT_ID) {
+			continue;
+		}
 		console.log('add to batch: ', deals[i].CONTACT_ID);
 		//console.log('[' + v.ID + '] ' + v.NAME);
 		cmd['c_' + deals[i].ID] = ['crm.contact.get', {
-			id: deals[i].ID
+			id: deals[i].CONTACT_ID
 		}];
 		hasData = true;
 	}
 	if (hasData) {
 		var resContacts = await BX24Client.callBatch(cmd);
 		for (var k in resContacts) {
-			console.log(resContacts[k].data());
+			console.log('CONTACT', resContacts[k].data());
 		}
 	}
 }
